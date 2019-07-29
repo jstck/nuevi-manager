@@ -1,0 +1,238 @@
+<html>
+<head>
+<link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="nouislider.min.css" />
+<script src="crc32.js"></script>
+<script src="FileSaver.js"></script>
+<script src="nouislider.min.js"></script>
+<script src="https://vuejs.org/js/vue.js"></script>
+<script src="vue-nouislider.js"></script>
+<script src="nuevi.js"></script>
+<script>
+
+
+//navigator.requestMIDIAccess({ sysex: true })
+//    .then(onMIDISuccess, onMIDIFailure);
+
+
+
+
+
+function doStuff() {
+	parseSysex(factory_eeprom_data);
+}
+
+/*
+
+function onMIDISuccess(midiAccess) {
+    console.log(midiAccess);
+
+    var inputs = midiAccess.inputs;
+    var outputs = midiAccess.outputs;
+    console.log(inputs);
+    //inputs.forEach(bralla);
+
+
+    for (var input of midiAccess.inputs.values()) {
+    	bralla(input);
+        input.onmidimessage = getMIDIMessage;
+    }
+}
+
+function bralla(midiinput) {
+
+	var dd = document.getElementById("mididevice");
+	
+
+	var opt = document.createElement("option");
+	opt.text = midiinput.name;
+	opt.id = midiinput.id;
+	dd.add(opt, dd[-1]);
+
+	console.log(midiinput.name);
+}
+
+
+function getMIDIMessage(midiMessage) {
+
+	var midiraw = midiMessage.data;
+
+	if(midiraw.length<2) return; //Some devices seem to spit out "empty stuff" on occasion. Ignore these.
+
+	var midi_command = midiraw[0];
+
+	switch(midi_command) {
+		case 0xF0: //SysEx
+
+
+			var sysexdata = midiraw.subarray(1,-1); //Skip first and last bytes, Sysex start and end
+
+			parseSysex(sysexdata);
+			break;
+
+		default:
+			console.log("Unhandled midi command: " + midiraw);
+			break;
+	}
+
+}
+*/
+var configstuff = parseSysex(factory_eeprom_data);
+
+
+function doThings() {
+
+
+	var ta = document.getElementById("jsondata");
+	ta.value = JSON.stringify(configstuff, null, 2);
+
+
+}
+
+
+function onMIDIFailure() {
+    console.log('Could not access your MIDI devices.');
+}
+
+function saveJson() {
+	var blob = new Blob([document.getElementById("jsondata").value], {type: "text/json;charset=utf-8"});
+	saveAs(blob, "NuEVI config.json");
+}
+
+/*
+
+Vue.component('text-field', {
+  template: `
+<div class="tableRow">
+	<div class="tableCell">{{ label }}</div>
+	<div class="tableCell"><input type="text" v-model="inputVal" /></div>
+</div>
+  `,
+  props: ['label', 'value'],
+  data() {
+    return { inputVal: this.value }
+  },
+  watch: {
+    inputVal(val) {
+      this.$emit('input', val);
+    }
+  }
+
+})
+
+
+
+Vue.component('dual-slider', {
+  template: `
+<div class="tableRow">
+	<div class="tableCell">{{ label }}</div>
+	<div class="tableCell"><v-nus :config="sensorslider" :value="inputVal" @update="inputVal = $event" /></div>
+</div>
+  `,
+  props: ['label', 'value'],
+  data() {
+    return { inputVal: this.value }
+  },
+  watch: {
+    inputVal(val) {
+      this.$emit('input', val);
+    }
+  }
+
+})
+*/
+
+
+</script>
+
+</head>
+<body onload="doThings()">
+NuEVI configuration manager.
+
+<select size="1" id="mididevice"></select>
+
+<div class="configTable" style="width: 500px;" >
+  <div class="tableBody">
+    <div class="tableRow">
+      <div class="tableCell">&nbsp;</div>
+      <div class="tableCell">&nbsp;</div>
+    </div>
+
+  </div>
+</div>
+Parsed EEPROM data:<br/>
+<textarea rows="10" cols="70" id="jsondata" name="stuff">{}</textarea><br/>
+<input type="button" value="Save file" onClick="saveJson()" /><br/>
+<input type="file" value="Load file" /><br/>
+<div id="nueviconfig">
+	<div class="configTable" style="width: 500px;" >
+		<div class="tableBody">
+			<div class="tableRow">
+				<div class="tableCell">EEPROM version</div>
+				<div class="tableCell"><input v-model="eeprom.version" :disabled="true" /></div>
+    		</div>
+
+			<div class="tableRow">
+				<div class="tableCell">Breath sensor</div>
+				<div class="tableCell">
+					<input v-model="eeprom.adjustBreath[0]" /><br />
+					<v-nus :config="sensorslider" :value="eeprom.adjustBreath" @update="eeprom.adjustBreath = $event" /><br />
+					<input v-model="eeprom.adjustBreath[1]" /><br />
+				</div>
+    		</div>
+
+			<div class="tableRow">
+				<div class="tableCell">Portamento sensor</div>
+				<div class="tableCell"><v-nus :config="sensorslider" :value="eeprom.adjustPorta" @update="eeprom.adjustPorta = $event" /></div>
+    		</div>
+
+    		<div class="tableRow">
+				<div class="tableCell">Pitch bend sensor</div>
+				<div class="tableCell"><v-nus :config="sensorslider" :value="eeprom.adjustPitchB" @update="eeprom.adjustPitchB = $event" /></div>
+    		</div>
+
+    		<div class="tableRow">
+				<div class="tableCell">Extra controller sensor</div>
+				<div class="tableCell"><v-nus :config="sensorslider" :value="eeprom.adjustExtraC" @update="eeprom.adjustExtraC = $event" /></div>
+    		</div>
+
+
+  		</div>
+	</div>
+
+<div>Resulting data:</div>
+<pre> {{ eeprom }} </pre>
+
+
+</div>
+</body>
+</html>
+
+    
+
+<script>
+
+//configstuff["poot"] = [1000, 3000];
+
+var v;
+v = new Vue({
+	el: "#nueviconfig",
+	data: {
+		"eeprom": configstuff,
+		"sensorslider" : {
+			"range" : {
+				"min": 0,
+				"max": 8192
+			},
+			"connect": true,
+			"step": 1
+
+		}
+	}
+});
+
+
+</script>
+
+
+
