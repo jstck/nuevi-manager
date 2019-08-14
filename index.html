@@ -11,8 +11,8 @@
 <script>
 
 
-//navigator.requestMIDIAccess({ sysex: true })
-//    .then(onMIDISuccess, onMIDIFailure);
+navigator.requestMIDIAccess({ sysex: true })
+    .then(onMIDISuccess, onMIDIFailure);
 
 
 
@@ -21,8 +21,6 @@
 function doStuff() {
 	parseSysex(factory_eeprom_data);
 }
-
-/*
 
 function onMIDISuccess(midiAccess) {
     console.log(midiAccess);
@@ -75,7 +73,7 @@ function getMIDIMessage(midiMessage) {
 	}
 
 }
-*/
+
 var configstuff = parseSysex(factory_eeprom_data);
 
 
