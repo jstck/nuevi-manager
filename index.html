@@ -42,7 +42,6 @@ function onMIDISuccess(midiAccess) {
 function bralla(midiinput) {
 
 	var dd = document.getElementById("mididevice");
-	
 
 	var opt = document.createElement("option");
 	opt.text = midiinput.name;
@@ -82,10 +81,10 @@ var configstuff = parseSysex(factory_eeprom_data);
 
 function doThings() {
 
-
+/*
 	var ta = document.getElementById("jsondata");
 	ta.value = JSON.stringify(configstuff, null, 2);
-
+*/
 
 }
 
@@ -99,6 +98,18 @@ function saveJson() {
 	saveAs(blob, "NuEVI config.json");
 }
 
+Vue.component('rotator-input', {
+	template: `<input v-model="inputVal" type="number" min="-24" max="24" />`,
+	props: ['value'],
+	data() {
+		return { inputVal: this.value-24 }
+	},
+	watch: {
+		inputVal(val) {
+		this.$emit('input', parseInt(val)+24);
+		}
+	}
+})
 /*
 
 Vue.component('text-field', {
@@ -160,8 +171,6 @@ NuEVI configuration manager.
 
   </div>
 </div>
-Parsed EEPROM data:<br/>
-<textarea rows="10" cols="70" id="jsondata" name="stuff">{}</textarea><br/>
 <input type="button" value="Save file" onClick="saveJson()" /><br/>
 <input type="file" value="Load file" /><br/>
 <div id="nueviconfig">
@@ -173,11 +182,15 @@ Parsed EEPROM data:<br/>
     		</div>
 
 			<div class="tableRow">
+				<div class="tableCell">Sensor calibration</div>
+			</div>
+
+			<div class="tableRow">
 				<div class="tableCell">Breath sensor</div>
 				<div class="tableCell">
-					<input v-model="eeprom.adjustBreath[0]" /><br />
-					<v-nus :config="sensorslider" :value="eeprom.adjustBreath" @update="eeprom.adjustBreath = $event" /><br />
-					<input v-model="eeprom.adjustBreath[1]" /><br />
+					<div><input type="number" v-model.lazy="eeprom.adjustBreath[0]" /></div>
+					<div><v-nus :config="sensorslider" :value="eeprom.adjustBreath" @update="eeprom.adjustBreath = $event" /></div>
+					<div><input v-model.lazy="eeprom.adjustBreath[1]" /></div>
 				</div>
     		</div>
 
@@ -194,25 +207,534 @@ Parsed EEPROM data:<br/>
     		<div class="tableRow">
 				<div class="tableCell">Extra controller sensor</div>
 				<div class="tableCell"><v-nus :config="sensorslider" :value="eeprom.adjustExtraC" @update="eeprom.adjustExtraC = $event" /></div>
-    		</div>
+			</div>
+
+			<div class="tableRow">
+				<div class="tableCell">General settings</div>
+			</div>
+
+			<div class="tableRow">
+				<div class="tableCell">Transposition</div>
+				<div class="tableCell">
+					<select v-model="eeprom.transpose">
+						<option>A</option>
+						<option value="0">-12</option>
+						<option value="1">-11</option>
+						<option value="2">-10</option>
+						<option value="3">-9</option>
+						<option value="4">-8</option>
+						<option value="5">-7</option>
+						<option value="6">-6</option>
+						<option value="7">-5</option>
+						<option value="8">-4</option>
+						<option value="9">-3</option>
+						<option value="10">-2</option>
+						<option value="11">-1</option>
+						<option value="12">None</option>
+						<option value="13">+1</option>
+						<option value="14">+2</option>
+						<option value="15">+3</option>
+						<option value="16">+4</option>
+						<option value="17">+5</option>
+						<option value="18">+6</option>
+						<option value="19">+7</option>
+						<option value="20">+8</option>
+						<option value="21">+9</option>
+						<option value="22">+10</option>
+						<option value="23">+11</option>
+						<option value="24">+12</option>
+					  </select>
+				</div>
+			</div>
+			<div class="tableRow">
+				<div class="tableCell">Octave</div>
+				<div class="tableCell">
+					<select v-model="eeprom.octave">
+						<option value=0>-3</option>
+						<option value=1>-2</option>
+						<option value=2>-1</option>
+						<option value=3>0</option>
+						<option value=4>+1</option>
+						<option value=5>+2</option>
+						<option value=6>+3</option>
+					</select>
+				</div>
+			</div>
+		
+			<div class="tableRow">
+				<div class="tableCell">MIDI channel</div>
+				<div class="tableCell">
+					<select v-model="eeprom.MIDIchannel">
+						<option>1</option>
+						<option>2</option>
+						<option>3</option>
+						<option>4</option>
+						<option>5</option>
+						<option>6</option>
+						<option>7</option>
+						<option>8</option>
+						<option>9</option>
+						<option>10</option>
+						<option>11</option>
+						<option>12</option>
+						<option>13</option>
+						<option>14</option>
+						<option>15</option>
+						<option>16</option>
+					  </select>
+				</div>
+			</div>
+			<div class="tableRow">
+				<div class="tableCell">Breath settings</div>
+			</div>
+	
+			<div class="tableRow">
+				<div class="tableCell">Breath CC 1</div>
+				<div class="tableCell">
+					<select v-model="eeprom.breathCC">
+						<option value="0">Off</option>
+						<option value="1">Mod wheel (CC 1)</option>
+						<option value="2">Breath (CC 2)</option>
+						<option value="3">Velocity (CC 7)</option>
+						<option value="4">Expression (CC 11)</option>
+						<option value="5">Mod wheel (high-res)</option>
+						<option value="6">Breath (high-res)</option>
+						<option value="7">Velocity (high-res)</option>
+						<option value="8">Expression (high-res)</option>
+						<option value="9">Cutoff/brightness (CC 74)</option>
+						<option value="10">UNO filter cutoff (CC 20)</option>
+					  </select>
+				</div>
+			</div>
+
+			<div class="tableRow">
+				<div class="tableCell">Breath CC 2</div>
+				<div class="tableCell">
+					<input id="breathCC2" v-model="eeprom.breathCC2" type="number" name="Breath CC 2" min="0" max="127" /> (0=off)
+				</div>
+			</div>
+
+			<div class="tableRow">
+				<div class="tableCell">Breath CC 2 rise</div>
+				<div class="tableCell">
+					<input id="breathCC2" v-model="eeprom.breathCC2rise" type="number" name="Breath CC 2 rise" min="1" max="10" />
+				</div>
+			</div>
+
+			<div class="tableRow">
+				<div class="tableCell">Breath after-touch</div>
+				<div class="tableCell">
+					<select v-model="eeprom.breathAT">
+						<option value="0">Off</option>
+						<option value="1">On</option>
+					</select>
+				</div>
+			</div>
+
+			<div class="tableRow">
+				<div class="tableCell">Velocity</div>
+				<div class="tableCell">
+					<input id="velocity" v-model="eeprom.velocity" type="number" name="Velocity" min="0" max="127" /> (0=dynamic)
+				</div>
+			</div>
+
+			<div class="tableRow">
+				<div class="tableCell">Breath curve</div>
+				<div class="tableCell">
+					<select v-model="eeprom.curve">
+						<option value="0">-4</option>
+						<option value="1">-3</option>
+						<option value="2">-2</option>
+						<option value="3">-1</option>
+						<option value="4">Linear</option>
+						<option value="5">+1</option>
+						<option value="6">+2</option>
+						<option value="7">+3</option>
+						<option value="8">+4</option>
+						<option value="9">S1</option>
+						<option value="10">S2</option>
+						<option value="11">Z1</option>
+						<option value="12">Z2</option>
+					</select>
+				</div>
+			</div>
+
+			<div class="tableRow">
+				<div class="tableCell">Velocity delay</div>
+				<div class="tableCell">
+					<input id="breathCC2" v-model="eeprom.velSmpDl" type="number" name="Velocity delay" min="0" max="30" /> (0=off)
+				</div>
+			</div>
 
 
-  		</div>
+			<div class="tableRow">
+				<div class="tableCell">Velocity bias</div>
+				<div class="tableCell">
+					<input id="breathCC2" v-model="eeprom.velBias" type="number" name="Velocity bias" min="0" max="9" /> (0=off)
+				</div>
+			</div>
+	
+			<div class="tableRow">
+				<div class="tableCell">Controller settings</div>
+			</div>
+	
+
+			<div class="tableRow">
+				<div class="tableCell">Portamento/glide</div>
+				<div class="tableCell">
+					<select v-model="eeprom.portamento">
+						<option value="0">Off</option>
+						<option value="1">On</option>
+						<option value="2">Switched</option>
+					</select>
+				</div>
+			</div>
+
+			<div class="tableRow">
+				<div class="tableCell">Pitch bend range</div>
+				<div class="tableCell">
+					<select v-model="eeprom.PBdepth">
+						<option value="0">Off</option>
+						<option value="1">1/1</option>
+						<option value="2">1/2</option>
+						<option value="3">1/3</option>
+						<option value="4">1/4</option>
+						<option value="5">1/5</option>
+						<option value="6">1/6</option>
+						<option value="7">1/7</option>
+						<option value="8">1/8</option>
+						<option value="9">1/9</option>
+						<option value="10">1/10</option>
+						<option value="11">1/11</option>
+						<option value="12">1/12</option>
+					</select>
+				</div>
+			</div>
+
+			<div class="tableRow">
+				<div class="tableCell">Extra controller CC</div>
+				<div class="tableCell">
+					<select v-model="eeprom.extraCT">
+						<option value="0">Off</option>
+						<option value="1">Mod wheel (CC 1)</option>
+						<option value="2">Foot pedal (CC 4)</option>
+						<option value="3">Cutoff/brightness (CC 74)</option>
+						<option value="4">Sustain pedal (CC 64)</option>
+						</select>
+				</div>
+			</div>
+			<div class="tableRow">
+				<div class="tableCell">Deglitch</div>
+				<div class="tableCell">
+					<input id="deglitch" v-model="eeprom.deglitch" type="number" name="Deglitch" min="0" max="70" /> (ms, 0=off)
+				</div>
+			</div>
+
+			<div class="tableRow">
+				<div class="tableCell">Pinky key</div>
+				<div class="tableCell">
+					<select v-model="eeprom.pinkySetting">
+						<option value="0">-12</option>
+						<option value="1">-11</option>
+						<option value="2">-10</option>
+						<option value="3">-9</option>
+						<option value="4">-8</option>
+						<option value="5">-7</option>
+						<option value="6">-6</option>
+						<option value="7">-5</option>
+						<option value="8">-4</option>
+						<option value="9">-3</option>
+						<option value="10">-2</option>
+						<option value="11">-1</option>
+						<option value="12">1/2 pitch bend</option>
+						<option value="13">+1</option>
+						<option value="14">+2</option>
+						<option value="15">+3</option>
+						<option value="16">+4</option>
+						<option value="17">+5</option>
+						<option value="18">+6</option>
+						<option value="19">+7</option>
+						<option value="20">+8</option>
+						<option value="21">+9</option>
+						<option value="22">+10</option>
+						<option value="23">+11</option>
+						<option value="24">+12</option>
+						</select>
+				</div>
+			</div>
+
+
+
+			<div class="tableRow">
+				<div class="tableCell">Vibrato settings</div>
+			</div>
+			<div class="tableRow">
+				<div class="tableCell">Vibrato control</div>
+				<div class="tableCell">
+					<select v-model="eeprom.vibratoControl">
+						<option value="0">Lever</option>
+						<option value="1">Bite</option>
+					</select>
+				</div>
+			</div>
+			<div class="tableRow">
+				<div class="tableCell">Vibrato depth</div>
+				<div class="tableCell">
+					<select v-model="eeprom.vibratoDepth">
+						<option value="0">Off</option>
+						<option>1</option>
+						<option>2</option>
+						<option>3</option>
+						<option>4</option>
+						<option>5</option>
+						<option>6</option>
+						<option>7</option>
+						<option>8</option>
+						<option>9</option>
+					</select>
+				</div>
+			</div>
+			<div class="tableRow">
+				<div class="tableCell">Vibrato return</div>
+				<div class="tableCell">
+					<select v-model="eeprom.vibratoReturn">
+						<option>0</option>
+						<option>1</option>
+						<option>2</option>
+						<option>3</option>
+						<option>4</option>
+					</select>
+				</div>
+			</div>
+			<div class="tableRow">
+				<div class="tableCell">Vibrato direction</div>
+				<div class="tableCell">
+					<select v-model="eeprom.vibratoDirection">
+						<option value="0">Normal</option>
+						<option value="1">Reversed</option>
+					</select>
+				</div>
+			</div>
+			<div class="tableRow">
+				<div class="tableCell">Vibrato sense (lever)</div>
+				<div class="tableCell">
+					<input id="vibratoSenseLever" v-model="eeprom.vibratoSenseLever" type="number" name="Vibrato sense lever" min="1" max="12" />
+				</div>
+			</div>
+			<div class="tableRow">
+				<div class="tableCell">Vibrato squelch (lever)</div>
+				<div class="tableCell">
+					<input id="vibratoSquelchLever" v-model="eeprom.vibratoSquelchLever" type="number" name="Vibrato squelch lever" min="1" max="30" />
+				</div>
+			</div>
+			<div class="tableRow">
+				<div class="tableCell">Vibrato sense (bite)</div>
+				<div class="tableCell">
+					<input id="vibratoSenseBite" v-model="eeprom.vibratoSenseBite" type="number" name="Vibrato sense bite" min="1" max="12" />
+				</div>
+			</div>
+			<div class="tableRow">
+				<div class="tableCell">Vibrato squelch (bite)</div>
+				<div class="tableCell">
+					<input id="vibratoSquelchBite" v-model="eeprom.vibratoSquelchBite" type="number" name="Vibrato squelch bite" min="1" max="30" />
+				</div>
+			</div>
+
+
+
+
+			<div class="tableRow">
+					<div class="tableCell">Extras</div>
+			</div>
+			<div class="tableRow">
+				<div class="tableCell">Legacy pitch bend</div>
+				<div class="tableCell">
+					<select v-model="eeprom.legacyPB" v-on:change="updateBits">
+						<option value="0">Off</option>
+						<option value="1">On</option>
+					</select>
+				</div>
+			</div>
+			<div class="tableRow">
+				<div class="tableCell">Legacy breath</div>
+				<div class="tableCell">
+					<select v-model="eeprom.legacyBR" v-on:change="updateBits">
+						<option value="0">Off</option>
+						<option value="1">On</option>
+					</select>
+				</div>
+			</div>
+			<div class="tableRow">
+				<div class="tableCell">Gate hold</div>
+				<div class="tableCell">
+					<select v-model="eeprom.gateHold" v-on:change="updateBits">
+						<option value="0">Off</option>
+						<option value="1">On</option>
+					</select>
+				</div>
+			</div>
+			<div class="tableRow">
+				<div class="tableCell">Special key</div>
+				<div class="tableCell">
+					<select v-model="eeprom.specialKey" v-on:change="updateBits">
+						<option value="0">Off</option>
+						<option value="1">On</option>
+					</select>
+				</div>
+			</div>
+			<div class="tableRow">
+				<div class="tableCell">3rd trill key interval</div>
+				<div class="tableCell">
+					<select v-model="eeprom.trill3interval">
+						<option value="0">+3</option>
+						<option value="1">+4</option>
+					</select>
+				</div>
+			</div>
+			<div class="tableRow">
+				<div class="tableCell">BCAS mode</div>
+				<div class="tableCell">
+					<select v-model="eeprom.bcasMode" v-on:change="updateBits">
+						<option value="0">Off</option>
+						<option value="1">On</option>
+					</select>
+				</div>
+			</div>
+			<div class="tableRow">
+				<div class="tableCell">DAC out mode</div>
+				<div class="tableCell">
+					<select v-model="eeprom.dacMode">
+						<option value="0">Breath</option>
+						<option value="1">Note pitch</option>
+					</select>
+				</div>
+			</div>
+			<div class="tableRow">
+				<div class="tableCell">Fast boot</div>
+				<div class="tableCell">
+					<select v-model="eeprom.fastBoot" v-on:change="updateBits">
+						<option value="0">Off</option>
+						<option value="1">On</option>
+					</select>
+				</div>
+			</div>
+			<div class="tableRow">
+				<div class="tableCell">Slow MIDI</div>
+				<div class="tableCell">
+					<select v-model="eeprom.slowMidi">
+						<option value="0">Off</option>
+						<option value="1">On</option>
+					</select>
+				</div>
+			</div>
+			<div class="tableRow">
+				<div class="tableCell">Rotator setup</div>
+			</div>
+
+			<div class="tableRow">
+				<div class="tableCell">Parallel</div>
+				<div class="tableCell">
+					<rotator-input v-model="eeprom.parallel"/>
+				</div>
+			</div>
+			<div class="tableRow">
+				<div class="tableCell">Rotations 1</div>
+				<div class="tableCell">
+					<rotator-input v-model="eeprom.rotations[0]"/>
+				</div>
+			</div>
+			<div class="tableRow">
+				<div class="tableCell">Rotations 2</div>
+				<div class="tableCell">
+					<rotator-input v-model="eeprom.rotations[1]"/>
+				</div>
+			</div>
+			<div class="tableRow">
+				<div class="tableCell">Rotations 3</div>
+				<div class="tableCell">
+					<rotator-input v-model="eeprom.rotations[2]"/>
+				</div>
+			</div>
+			<div class="tableRow">
+				<div class="tableCell">Rotations 4</div>
+				<div class="tableCell">
+					<rotator-input v-model="eeprom.rotations[3]"/>
+				</div>
+			</div>
+			<div class="tableRow">
+				<div class="tableCell">Priority</div>
+				<div class="tableCell">
+					<select v-model="eeprom.priority">
+						<option value="0">Melody</option>
+						<option value="1">Rotations</option>
+					</select>
+				</div>
+			</div>
+
+			<div class="tableRow">
+				<div class="tableCell">Fastpatch setup</div>
+			</div>
+			<div class="tableRow">
+				<div class="tableCell">Fastpatch 1</div>
+				<div class="tableCell">
+					<input id="fastpatch0" v-model="eeprom.fastPatch[0]" type="number" name="Fastpatch 1" min="0" max="127" />
+				</div>
+			</div>
+
+			<div class="tableRow">
+				<div class="tableCell">Fastpatch 2</div>
+				<div class="tableCell">
+					<input id="fastpatch0" v-model="eeprom.fastPatch[1]" type="number" name="Fastpatch 2" min="0" max="127" />
+				</div>
+			</div>
+
+			<div class="tableRow">
+				<div class="tableCell">Fastpatch 3</div>
+				<div class="tableCell">
+					<input id="fastpatch0" v-model="eeprom.fastPatch[2]" type="number" name="Fastpatch 3" min="0" max="127" />
+				</div>
+			</div>
+
+			<div class="tableRow">
+				<div class="tableCell">Fastpatch 4</div>
+				<div class="tableCell">
+					<input id="fastpatch0" v-model="eeprom.fastPatch[3]" type="number" name="Fastpatch 4" min="0" max="127" />
+				</div>
+			</div>
+
+			<div class="tableRow">
+				<div class="tableCell">Fastpatch 5</div>
+				<div class="tableCell">
+					<input id="fastpatch0" v-model="eeprom.fastPatch[4]" type="number" name="Fastpatch 5" min="0" max="127" />
+				</div>
+			</div>
+
+			<div class="tableRow">
+				<div class="tableCell">Fastpatch 6</div>
+				<div class="tableCell">
+					<input id="fastpatch0" v-model="eeprom.fastPatch[5]" type="number" name="Fastpatch 6" min="0" max="127" />
+				</div>
+			</div>
+
+			<div class="tableRow">
+				<div class="tableCell">Fastpatch 7</div>
+				<div class="tableCell">
+					<input id="fastpatch0" v-model="eeprom.fastPatch[6]" type="number" name="Fastpatch 7" min="0" max="127" />
+				</div>
+			</div>
+																					
+		</div>
 	</div>
 
-<div>Resulting data:</div>
-<pre> {{ eeprom }} </pre>
+	<div>Resulting data:</div>
+	<pre> {{ eeprom }} </pre>
 
 
 </div>
 </body>
 </html>
 
-    
-
 <script>
-
-//configstuff["poot"] = [1000, 3000];
 
 var v;
 v = new Vue({
@@ -220,13 +742,29 @@ v = new Vue({
 	data: {
 		"eeprom": configstuff,
 		"sensorslider" : {
+			format: {
+				// 'to' the formatted value. Receives a number.
+				to: function (value) {
+					return Math.round(value);
+				},
+				// 'from' the formatted value.
+				// Receives a string, should return a number.
+				from: function (value) {
+					return Number(parseInt(value));
+				}
+			},
 			"range" : {
 				"min": 0,
-				"max": 8192
+				"max": 4096
 			},
 			"connect": true,
 			"step": 1
 
+		}
+	},
+	methods: {
+		updateBits: function(event) {
+			updateBitfield(this.eeprom);
 		}
 	}
 });
