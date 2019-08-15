@@ -15,26 +15,58 @@ navigator.requestMIDIAccess({ sysex: true })
     .then(onMIDISuccess, onMIDIFailure);
 
 
-
+var nueviInput = null;
+var nueviOutput = null;
+var midiAccess = null;
 
 
 function doStuff() {
 	parseSysex(factory_eeprom_data);
 }
 
-function onMIDISuccess(midiAccess) {
-    console.log(midiAccess);
+function onMIDISuccess(midiAccessL) {
+	midiAccess = midiAccessL;
+	scanMidiDevices();
 
-    var inputs = midiAccess.inputs;
-    var outputs = midiAccess.outputs;
-    console.log(inputs);
-    //inputs.forEach(bralla);
+}
 
+function scanMidiDevices() {
+	statusbox = document.getElementById("mididevice_status");
+
+	if(!midiAccess) {
+		statusbox.innerHTML = "MIDI access not enabled.";
+		return;
+	}
+
+	inputsfound=0;
+	outputsfound=0;
 
     for (var input of midiAccess.inputs.values()) {
-    	bralla(input);
-        input.onmidimessage = getMIDIMessage;
-    }
+		console.log("Seen MIDI input device: " + input.name + ", id " + input.id);
+		if(input.name == "NuEVI MIDI") {
+			inputsfound++;
+			nueviInput = input;
+		}
+	}
+
+	for (var output of midiAccess.outputs.values()) {
+		console.log("Seen MIDI output device: " + output.name + ", id " + output.id);
+		if(output.name == "NuEVI MIDI") {
+			outputsfound++;
+			nueviOutput = output;
+		}
+	}
+
+	if(inputsfound==1 && outputsfound ==1) {
+		statusbox.innerHTML = "NuEVI device found."
+		nueviInput.onmidimessage = getMIDIMessage;
+		sendSysexVersionRequest(nueviOutput);
+	} else if (inputsfound>1 || outputsfound>1) {
+		statusbox.innerHTML = "Multiple NuEVI devices found. Please disconnect all but one."
+	} else if(inputsfound==0 || outputsfound ==0) {
+		statusbox.innerHTML = "No NuEVI devices found."
+	} 
+
 }
 
 function bralla(midiinput) {
@@ -49,6 +81,9 @@ function bralla(midiinput) {
 	console.log(midiinput.name);
 }
 
+function sysexHandler(event) {
+
+}
 
 function getMIDIMessage(midiMessage) {
 
@@ -76,23 +111,12 @@ function getMIDIMessage(midiMessage) {
 
 var configstuff = parseSysex(factory_eeprom_data);
 
-
-function doThings() {
-
-/*
-	var ta = document.getElementById("jsondata");
-	ta.value = JSON.stringify(configstuff, null, 2);
-*/
-
-}
-
-
 function onMIDIFailure() {
     console.log('Could not access your MIDI devices.');
 }
 
 function saveJson() {
-	var blob = new Blob([document.getElementById("jsondata").value], {type: "text/json;charset=utf-8"});
+	var blob = new Blob([JSON.stringify(configstuff, null, 2)], {type: "text/json;charset=utf-8"});
 	saveAs(blob, "NuEVI config.json");
 }
 
@@ -155,23 +179,17 @@ Vue.component('dual-slider', {
 </script>
 
 </head>
-<body onload="doThings()">
+<body>
 NuEVI configuration manager.
 
-<select size="1" id="mididevice"></select>
-
-<div class="configTable" style="width: 500px;" >
-  <div class="tableBody">
-    <div class="tableRow">
-      <div class="tableCell">&nbsp;</div>
-      <div class="tableCell">&nbsp;</div>
-    </div>
-
-  </div>
-</div>
+<input type="button" value="Scan MIDI devices" onClick="scanMidiDevices()" />
 <input type="button" value="Save file" onClick="saveJson()" /><br/>
 <input type="file" value="Load file" /><br/>
 <div id="nueviconfig">
+
+	<div id="mididevice_status"></div>
+	<div id="mididevice_info"></div>
+
 	<div class="configTable" style="width: 500px;" >
 		<div class="tableBody">
 			<div class="tableRow">

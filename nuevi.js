@@ -332,3 +332,14 @@ function sendSysexConfig(nc) {
 	sysexBuffer.set(crc_buf, 3+8+2+configBuffer.length); //CRC
 	return sysexBuffer;
 }
+
+
+function sendSysexVersionRequest(outputDevice) {
+	var sysexBuffer = new Uint8Array(13);
+	sysexBuffer.set(0xF0, 0); //Sysex start marker
+	sysexBuffer.set(nuevi_vendor, 1); //Vendor
+	var command="NuEVIc03".split("").map(c => c.charCodeAt(0)); //String to byte array
+	sysexBuffer.set(command, 4); //Command
+	sysexBuffer.set(0xF7, 12); //Sysex end marker
+	outputDevice.send(sysexBuffer);
+}
